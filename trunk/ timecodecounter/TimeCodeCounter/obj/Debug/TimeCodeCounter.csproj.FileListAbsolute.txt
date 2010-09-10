@@ -1,0 +1,9 @@
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\bin\Debug\TimeCodeCounter.exe
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\bin\Debug\TimeCodeCounter.pdb
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\obj\Debug\ResolveAssemblyReference.cache
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\obj\Debug\TimeCodeCounter.Properties.Resources.resources
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\obj\Debug\TimeCodeCounter.csproj.GenerateResource.Cache
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\obj\Debug\TimeCodeCounter.exe
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\obj\Debug\TimeCodeCounter.pdb
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\obj\Debug\TimeCodeCounter.form_timeCode.resources
+E:\MyDocuments\Visual Studio 2008\Projects\TimeCodeCounter\TimeCodeCounter\obj\Debug\TimeCodeCounter.SettingForm.resources
