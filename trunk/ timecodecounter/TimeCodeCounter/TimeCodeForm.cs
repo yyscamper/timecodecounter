@@ -14,11 +14,44 @@ namespace TimeCodeCounter
     {
         private delegate void _safeSetTimeCodeLabelCall(String str);
         SettingForm mSettingForm = null;
+        Boolean mStartFlag = false;
+        public TimeCode mTimeCode = null;
+
+        public void SetTimeCodeFont(Font font)
+        {
+            this.label_timeCode.Font = font;
+        }
+
+        public Font GetTimeCodeFont()
+        {
+            return this.label_timeCode.Font;
+        }
+
+        public void SetTimeCodeForeColor(Color color)
+        {
+            this.label_timeCode.ForeColor = color;
+        }
+
+        public Color GetTimeCodeForeColor()
+        {
+            return this.label_timeCode.ForeColor;
+        }
+
+        public void SetTimeCodeBackColor(Color color)
+        {
+            this.label_timeCode.BackColor = color;
+        }
+
+        public Color GetTimeCodeBackColor()
+        {
+            return this.label_timeCode.BackColor;
+        }
 
         public form_timeCode()
         {
             InitializeComponent();
             Control.CheckForIllegalCrossThreadCalls = false;
+            mTimeCode = new TimeCode();
         }
 
         private void label_timeCode_Click(object sender, EventArgs e)
@@ -28,41 +61,17 @@ namespace TimeCodeCounter
           
         public void updateTimeCodeThreadFunc()
         {
-            String labelStr;
             DateTime preTime, currTime;
             TimeSpan span;
             preTime = DateTime.Now;
-            int hour = 12, minute = 0, second = 0, frame = 0;
-            StringBuilder strbuf = new StringBuilder(12);
             while(true){
                 currTime = DateTime.Now;
                 span = currTime - preTime;
                 if(span.Milliseconds >= 40){
                     preTime = currTime;
-                    if (++frame >= 25)
-                    {
-                        frame = 0;
-                        if (++second >= 60)
-                        {
-                            second = 0;
-                            if (++minute >= 60)
-                            {
-                                minute = 0;
-                                if (++hour >= 24)
-                                {
-                                    hour = 0;
-                                }
-                            }
-
-                        }
-                    }
+                    mTimeCode.Increase();
                 }
-                strbuf.Remove(0, strbuf.Length);
-                strbuf.AppendFormat("{0:D2}:", hour);
-                strbuf.AppendFormat("{0:D2}:", minute);
-                strbuf.AppendFormat("{0:D2}-", second);
-                strbuf.AppendFormat("{0:D2}", frame);
-                safeSetTimeCodeLabel(strbuf.ToString());
+                this.label_timeCode.Text = mTimeCode.ToString();
                 Thread.Sleep(1);
             } 
         }  
@@ -80,33 +89,6 @@ namespace TimeCodeCounter
             }
         }
 
-        private void form_timeCode_SizeChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void form_timeCode_MouseClick(object sender, MouseEventArgs e)
-        {
-            /*DateTime now = DateTime.Now;
-            String labelStr = now.Hour + ":" + now.Minute + ":" + now.Second + ":" + now.Millisecond;
-            label_timeCode.Text = labelStr;*/
-        }
-
-        private void safeSetTimeCodeLabel(String str)
-        {
-            /*if(this.InvokeRequired){
-                _safeSetTimeCodeLabelCall call = delegate(String s)
-                {
-                    this.label_timeCode.Text = s;
-                };
-                this.Invoke(call, str);
-            }else{
-                this.label_timeCode.Text = str;
-            }*/
-
-            this.label_timeCode.Text = str;
-        }
-
         private void rightMenu_Opening(object sender, CancelEventArgs e)
         {
 
@@ -114,12 +96,18 @@ namespace TimeCodeCounter
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
+           
+        }
+
+        private void rightmenu_setting_Click(object sender, EventArgs e)
+        {
             if (mSettingForm == null)
             {
-                mSettingForm = new SettingForm();
+                mSettingForm = new SettingForm(this);
             }
             this.Visible = false;
-            this.ShowDialog(mSettingForm);
+            mSettingForm.Visible = true;
+            this.Show(mSettingForm);
         }
     }
 }
