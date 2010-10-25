@@ -8,73 +8,29 @@ namespace TimeCodeCounter
     public class TimeCode
     {
         private double frameRate;
-        private Boolean dropFrameFlag;
-        private int hour;
-        private int min;
-        private int sec;
-        private int frame;
-        private Boolean hourShowFlag = true;
-        private Boolean minShowFlag = true;
-        private Boolean secShowFlag = true;
-        private Boolean frameShowFlag = true;
+        private Boolean dropFrame;
+        private DateTime startTime;
 
-        private StringBuilder mSb = new StringBuilder(12);
+        private TimeSpan veryBeginSpan;
+        private TimeSpan beginSpan;
 
-        public int Hour
-        {
-            get
-            {
-                return hour;
-            }
-            set
-            {
-                hour = value;
-            }
-        }
+        public static readonly int USE_CUSTOM_VALUE = 0;
+        public static readonly int USE_SYSTEM_TIME = 1;
+        public static readonly int USE_RANDOM_VALUE = 2;
 
-        public int Minute
-        {
-            get
-            {
-                return min;
-            }
-            set
-            {
-                min = value;
-            }
-        }
+        private int mMode = USE_CUSTOM_VALUE; //模式
 
-        public int Second
-        {
-            get
-            {
-                return sec;
-            }
-            set
-            {
-                sec = value;
-            }
-        }
-
-        public int Frame{
-            get{
-                return frame;
-            }
-            set
-            {
-                frame = value;
-            }
-        }
+        private Boolean mHasBegin = false;
 
         public Boolean DropFrame
         {
             get
             {
-                return dropFrameFlag;
+                return dropFrame;
             }
             set
             {
-                dropFrameFlag = value;
+                dropFrame = value;
             }
         }
 
@@ -90,132 +46,91 @@ namespace TimeCodeCounter
             }
         }
 
-        public Boolean HourShow
-        {
-            get
-            {
-                return hourShowFlag;
+        public int Mode{
+            get{
+                return mMode;
             }
-            set
-            {
-                hourShowFlag = value;
-            }
-        }
-
-        public Boolean MinuteShow
-        {
-            get
-            {
-                return minShowFlag;
-            }
-            set
-            {
-                minShowFlag = value;
-            }
-        }
-
-        public Boolean SecondShow
-        {
-            get
-            {
-                return secShowFlag;
-            }
-            set
-            {
-                secShowFlag = value;
-            }
-        }
-
-        public Boolean FrameShow
-        {
-            get
-            {
-                return frameShowFlag;
-            }
-            set
-            {
-                frameShowFlag = value;
+            set{
+                mMode = value;
             }
         }
 
         public TimeCode()
         {
-            hour = 0;
-            min = 0;
-            sec = 0;
-            frame = 0;
             frameRate = 25;
-            dropFrameFlag = false;
+            dropFrame = false;
+            veryBeginSpan = TimeSpan.Zero;
+            beginSpan = TimeSpan.Zero;
         }
 
-        public TimeCode(int hour, int min, int sec, int frame)
+        public TimeCode(int hour, int min, int sec, int frame, double frameRate)
         {
-            this.hour = hour;
-            this.min = min;
-            this.sec = sec;
-            this.frame = frame;
-        }
-
-        public TimeCode(int hour, int min, int sec, int frame, Boolean dropframe, double framerate)
-        {
-            this.hour = hour;
-            this.min = min;
-            this.sec = sec;
-            this.frame = frame;
-            this.dropFrameFlag = dropframe;
-            this.frameRate = framerate;
+            SetInitValue(hour, min, sec, frame, frameRate);
         }
 
         public override String ToString(){
-            mSb.Remove(0, mSb.Length);
-            if(hourShowFlag){
-                mSb.AppendFormat("{0:D2}:", hour);
-            }
-            if(minShowFlag){
-                mSb.AppendFormat("{0:D2}:", min);
-            }
-            if(secShowFlag){
-                mSb.AppendFormat("{0:D2}-", sec);
-            }
-            if(frameShowFlag){
-                mSb.AppendFormat("{0:D2}", frame);
-            }
+            int hour = 0, min = 0, sec = 0, frame = 0;
+            GetCurrTimeCode(ref hour, ref min, ref sec, ref frame);
+            StringBuilder mSb = new StringBuilder();
+            mSb.AppendFormat("{0:D2}:{1:D2}:{2:D2}-{3:D2}", hour, min, sec, frame);
             return mSb.ToString();
         }
 
-        public void SetShowMode(Boolean hourShow, Boolean minShow, Boolean secShow, Boolean frameShow)
+        public void GetCurrTimeCode(ref int hour, ref int min, ref int sec, ref int frame)
         {
-            this.hourShowFlag = hourShow;
-            this.minShowFlag = minShow;
-            this.secShowFlag = secShow;
-            this.frameShowFlag = frameShow;
-        }
-
-        public void Increase()
-        {
-            if (++frame >= 25)
-            {
-                frame = 0;
-                if (++sec >= 60)
-                {
-                    sec = 0;
-                    if (++min >= 60)
-                    {
-                        min = 0;
-                        if (++hour >= 24)
-                        {
-                            hour = 0;
-                        }
-                    }
-
-                }
+            DateTime currTime = DateTime.Now;
+            if(mMode == USE_SYSTEM_TIME){
+                hour = currTime.Hour;
+                min = currTime.Minute;
+                sec = currTime.Second;
+                frame = (int)(currTime.Millisecond * frameRate / 1000.0);
+            }else{
+                TimeSpan span = currTime - startTime + beginSpan;
+                hour = (span.Hours + span.Days * 24) % 100;
+                min = span.Minutes;
+                sec = span.Seconds;
+                frame = (int)(span.Milliseconds * frameRate / 1000.0);
             }
         }
 
-        public void Decrease()
+        public void GetInitTimeCode(ref int hour, ref int min, ref int sec, ref int frame)
         {
-
+            hour = veryBeginSpan.Hours;
+            min = veryBeginSpan.Minutes;
+            sec = veryBeginSpan.Seconds;
+            frame = (int)(veryBeginSpan.Milliseconds * frameRate / 1000.0);
         }
 
+        public void Start()
+        {
+            startTime = DateTime.Now;
+            if(!mHasBegin && mMode == USE_RANDOM_VALUE){
+                Random randobj = new Random();
+                int hourRandVal = randobj.Next(100);
+                veryBeginSpan = new TimeSpan(hourRandVal / 24, hourRandVal % 24, randobj.Next(60),  randobj.Next(60),
+                    (int)(randobj.Next((int)Math.Ceiling(frameRate)) * 1000 / frameRate));
+                beginSpan = veryBeginSpan;
+            }
+            mHasBegin = true;
+        }
+
+        public void SetInitValue(int hour, int min, int sec, int frame, double frameRate)
+        {
+            this.frameRate = frameRate;
+            veryBeginSpan = new TimeSpan(hour/24, hour%24, min, sec, (int)(frame * 1000 / frameRate));
+            beginSpan = veryBeginSpan;
+            Start();
+        }
+
+        public void Stop()
+        {
+            beginSpan = veryBeginSpan;
+            mHasBegin = false;
+        }
+
+        public void Pause()
+        {
+            beginSpan = DateTime.Now - startTime + beginSpan;
+        }
     }
 }
